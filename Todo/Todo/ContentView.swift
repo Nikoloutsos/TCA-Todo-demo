@@ -6,21 +6,59 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
+
+struct AppState: Equatable {
+    var counter: Int
+}
+
+enum AppAction {
+    case increaseCounter
+    case decreaseCounter
+}
+
+struct AppEnvironment {
+    
+}
+
+let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
+    switch action {
+    case .increaseCounter:
+        if state.counter == 5 { // Business logic
+            return .none
+        }
+        state.counter += 1
+        return .none
+        
+    case .decreaseCounter:
+        state.counter -= 1
+        return .none
+    }
+}.debug()
 
 struct ContentView: View {
+    let store: Store<AppState, AppAction>
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        WithViewStore(self.store) { viewStore in
+            HStack(spacing: 20.0) {
+                Button(action: { viewStore.send(.decreaseCounter) }) {
+                    Text("-") 
+                }
+                Text("\(viewStore.counter)")
+                Button(action: { viewStore.send(.increaseCounter) }) {
+                    Text("+")
+                }
+            }
         }
-        .padding()
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(store: Store(
+            initialState: .init(counter: 0),
+            reducer: appReducer,
+            environment: AppEnvironment()
+        ))
     }
 }
