@@ -13,7 +13,7 @@ struct TodoApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(store: Store(
-                initialState: .init(counter: 0),
+                initialState: .init(counters: [0, 0]),
                 reducer: appReducer,
                 environment: AppEnvironment()
             ))

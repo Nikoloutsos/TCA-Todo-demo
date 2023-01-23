@@ -9,12 +9,12 @@ import SwiftUI
 import ComposableArchitecture
 
 struct AppState: Equatable {
-    var counter: Int
+    var counters: [Int]
 }
 
 enum AppAction {
-    case increaseCounter
-    case decreaseCounter
+    case increaseCounter(index: Int)
+    case decreaseCounter(index: Int)
 }
 
 struct AppEnvironment {
@@ -23,15 +23,12 @@ struct AppEnvironment {
 
 let appReducer = Reducer<AppState, AppAction, AppEnvironment> { state, action, environment in
     switch action {
-    case .increaseCounter:
-        if state.counter == 5 { // Business logic
-            return .none
-        }
-        state.counter += 1
+    case .increaseCounter(let index):
+        state.counters[index] += 1
         return .none
         
-    case .decreaseCounter:
-        state.counter -= 1
+    case .decreaseCounter(let index):
+        state.counters[index] -= 1
         return .none
     }
 }.debug()
@@ -40,23 +37,36 @@ struct ContentView: View {
     let store: Store<AppState, AppAction>
     var body: some View {
         WithViewStore(self.store) { viewStore in
+            VStack {
+                CounterCell(viewStore: viewStore, index: 0)
+                CounterCell(viewStore: viewStore, index: 1)
+            }
+            
+        }
+    }
+}
+
+struct CounterCell: View {
+    let viewStore: ViewStore<AppState, AppAction>
+    let index: Int
+    
+    var body: some View {
             HStack(spacing: 20.0) {
-                Button(action: { viewStore.send(.decreaseCounter) }) {
-                    Text("-") 
+                Button(action: { viewStore.send(.decreaseCounter(index: index)) }) {
+                    Text("-")
                 }
-                Text("\(viewStore.counter)")
-                Button(action: { viewStore.send(.increaseCounter) }) {
+                Text("\(viewStore.counters[index])")
+                Button(action: { viewStore.send(.increaseCounter(index: index)) }) {
                     Text("+")
                 }
             }
-        }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView(store: Store(
-            initialState: .init(counter: 0),
+            initialState: .init(counters: [0, 0]),
             reducer: appReducer,
             environment: AppEnvironment()
         ))
